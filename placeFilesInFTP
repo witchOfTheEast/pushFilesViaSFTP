@@ -1,0 +1,38 @@
+#!/bin/bash
+
+passwordFile="./.password"
+read -r password < "${passwordFile}"
+
+sftpHostname="HOSTNAME"
+sftpPath=":SITEID/path"
+
+templateFile="./sftpTemplate"
+commandFile="./sftpCommandsFile"
+namesFile="./names.txt"
+
+blockCount=50176
+blockSize="1K"
+
+sleepTime=30
+
+while read username; do
+
+    for i in a b; do
+
+        if ! [[ -e "${username}_${i}" ]]; then
+            dd if=/dev/urandom of="${usernam}_${i}" iflag=fullblock bs="${blockSize}" count="${blockCount}";
+        fi
+
+    done;
+
+    sed "s/NAMEHERE/${username}/" "${templateFile}" > "${commandFile}"; 
+
+    sshpass -p "${password}" sftp -oBatchMode=no -b "${commandFile}" "${username}@${sftpHostname}${sftpPath}";
+
+    sleepTime="$(shuf -i 30-60 -n 1)"
+
+    echo -e "\nSleeping ${sleepTime} seconds\n"
+
+    sleep ${sleepTime}s
+
+done < "${namesFile}"
